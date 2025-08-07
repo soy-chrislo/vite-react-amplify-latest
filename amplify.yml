@@ -1,0 +1,33 @@
+version: 1
+backend:
+  phases:
+    preBuild:
+      commands:
+        - curl -fsSL https://fnm.vercel.app/install | bash
+        - export PATH="$HOME/.fnm:$PATH"
+        - eval "$(fnm env)"
+        - source /root/.bashrc
+        - fnm install 22
+        - fnm use 22
+        - npm install -g pnpm
+        - pnpm install --frozen-lockfile --prefer-offline --shamefully-hoist
+    build:
+      commands:
+        - pnpm ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
+frontend:
+  phases:
+    build:
+      commands:
+        - pnpm run build
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - .pnpm-store/**/*
+      - dist/**/*
+      - .vite/**/*
+      - ~/.cache/cypress/**/*
+      - amplify_outputs.json
+      
